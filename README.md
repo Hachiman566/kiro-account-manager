@@ -139,7 +139,7 @@ A: Windows requires admin privileges to modify registry. Right-click the app and
 
 **The backend source code (Rust) has been removed from this repository.**
 
-Some individuals violated the GPL-3.0 license by using this project for commercial purposes without open-sourcing their modifications. This is a clear violation of the GPL-3.0 terms which require:
+Some individuals violated the GPL-3.0 license by using this project for commercial purposes - **charging users for this free software** - without open-sourcing their modifications. This is a clear violation of the GPL-3.0 terms which require:
 
 - ✅ Derivative works must be open-sourced under GPL-3.0
 - ✅ Source code must be made available

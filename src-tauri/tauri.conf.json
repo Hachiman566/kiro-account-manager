@@ -43,7 +43,7 @@
   },
   "bundle": {
     "active": true,
-    "createUpdaterArtifacts": false,
+    "createUpdaterArtifacts": true,
     "category": "DeveloperTool",
     "copyright": "© 2025 hj01857655",
     "icon": [
@@ -73,7 +73,7 @@
       "endpoints": [
         "https://github.com/Hachiman566/kiro-account-manager/releases/latest/download/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVGOUFCNTE3RkIwREY5QTcKUldTbitRMzdGN1dhWDhaWi95UGxLSTkrNXZPTEZsWnd1bUtIS3dSOHlLb2Y1SWNBWVUxK3FjK2QK"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDlCODk0QzQxQURFODc3RkQKUldUOWQraXRRVXlKbXpWY1BDUFg3MFRxZ3laMEhyRTllbnJXdVV3eURDK3l2ZjhUa0RadktyeEQK"
     }
   }
 }

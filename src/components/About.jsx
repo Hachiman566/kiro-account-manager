@@ -5,7 +5,6 @@ import { check } from '@tauri-apps/plugin-updater'
 import { relaunch } from '@tauri-apps/plugin-process'
 import { useTheme } from '../contexts/ThemeContext'
 import { useI18n } from '../i18n.jsx'
-import alipayQR from '../assets/donate/alipay.jpg'
 import wechatQR from '../assets/donate/wechat.jpg'
 
 function About() {
@@ -203,10 +202,6 @@ function About() {
             <span className={`text-base font-medium ${colors.text}`}>{t('about.donate')}</span>
           </div>
           <div className="flex justify-center gap-10">
-            <div className="text-center cursor-pointer group" onClick={() => setPreviewImg(alipayQR)}>
-              <img src={alipayQR} alt={t('about.alipay')} className="w-28 h-28 rounded-xl object-cover mb-2 group-hover:scale-105 transition-transform shadow-lg" />
-              <span className={`text-sm ${colors.textMuted}`}>{t('about.alipay')}</span>
-            </div>
             <div className="text-center cursor-pointer group" onClick={() => setPreviewImg(wechatQR)}>
               <img src={wechatQR} alt={t('about.wechat')} className="w-28 h-28 rounded-xl object-cover mb-2 group-hover:scale-105 transition-transform shadow-lg" />
               <span className={`text-sm ${colors.textMuted}`}>{t('about.wechat')}</span>

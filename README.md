@@ -28,16 +28,7 @@
 ---
 
 ## 📥 下载
-
-**最新版本**：[v1.8.2](https://github.com/hj01857655/kiro-account-manager/releases/latest)
-
-| 平台 | 架构 | 文件格式 | 下载链接 |
-|------|------|---------|---------|
-| 🪟 **Windows** | x64 | MSI 安装包 | [KiroAccountManager_1.8.2_x64_zh-CN.msi](https://github.com/hj01857655/kiro-account-manager/releases/download/v1.8.2/KiroAccountManager_1.8.2_x64_zh-CN.msi) |
-| 🍎 **macOS** | Intel (x64) | DMG 镜像 | [KiroAccountManager_1.8.2_x64.dmg](https://github.com/hj01857655/kiro-account-manager/releases/download/v1.8.2/KiroAccountManager_1.8.2_x64.dmg) |
-| 🍎 **macOS** | Apple Silicon (M1/M2/M3) | DMG 镜像 | [KiroAccountManager_1.8.2_aarch64.dmg](https://github.com/hj01857655/kiro-account-manager/releases/download/v1.8.2/KiroAccountManager_1.8.2_aarch64.dmg) |
-| 🐧 **Linux** | x86_64 | AppImage | [KiroAccountManager_1.8.2_amd64.AppImage](https://github.com/hj01857655/kiro-account-manager/releases/download/v1.8.2/KiroAccountManager_1.8.2_amd64.AppImage) |
-| 🐧 **Linux** | x86_64 | DEB 包 | [KiroAccountManager_1.8.2_amd64.deb](https://github.com/hj01857655/kiro-account-manager/releases/download/v1.8.2/KiroAccountManager_1.8.2_amd64.deb) |
+[RELEASES](https://github.com/Hachiman566/kiro-account-manager/releases)
 
 **系统要求**：
 - **Windows**: Windows 10/11 (64-bit)，需要 [WebView2](https://developer.microsoft.com/microsoft-edge/webview2/) (Win11 已内置)
@@ -46,7 +37,12 @@
 
 **安装说明**：
 - **Windows**: 双击 `.msi` 文件安装，首次运行可能需要安装 WebView2
-- **macOS**: 打开 `.dmg` 文件，拖动应用到 Applications 文件夹，首次运行需要在「系统偏好设置 → 安全性与隐私」中允许
+- **macOS**: 打开 `.dmg` 文件，拖动应用到 Applications 文件夹
+  - **首次打开提示"已损坏"解决方法**：由于应用未进行 Apple 代码签名，macOS 会提示"已损坏，无法打开"。请在终端执行：
+    ```bash
+    xattr -cr /Applications/Kiro\ Account\ Manager.app
+    ```
+  - 或在「系统偏好设置 → 安全性与隐私」中点击「仍要打开」
 - **Linux AppImage**: 添加执行权限 `chmod +x KiroAccountManager_amd64.AppImage`，然后直接运行
 - **Linux DEB**: 使用 `sudo dpkg -i KiroAccountManager_amd64.deb` 安装
 
@@ -211,24 +207,6 @@
 - 一键启动 / 关闭
 - 自动同步代理和模型设置
 
----
-
-## 📸 截图
-
-![首页](screenshots/首页.webp)
-![账号管理](screenshots/账号管理.webp)
-![桌面授权](screenshots/桌面授权.webp)
-![规则管理](screenshots/规则管理.webp)
-![设置](screenshots/设置.png)
-![关于](screenshots/关于.png)
-
----
-
-## 💬 交流反馈
-
-- 🐛 [提交 Issue](https://github.com/hj01857655/kiro-account-manager/issues)
-- 💬 QQ 1群：[1020204332](https://qm.qq.com/q/Vh7mUrNpa8)（已满）
-- 💬 QQ 2群：[1080919449](https://qm.qq.com/q/xi0AglEqGs)
 
 ---
 
@@ -252,20 +230,13 @@ A: 网络超时，手动再刷新一次或换个网络试试。
 
 ---
 
-## 💖 赞助
+## 💖 Buy Me a Coffee
 
-如果这个项目对你有帮助，可以请作者喝杯咖啡 ☕
 
 <p align="center">
   <img src="src/assets/donate/wechat.jpg" alt="微信" width="200">
-  <img src="src/assets/donate/alipay.jpg" alt="支付宝" width="200">
 </p>
 
----
-
-## ⭐ Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=hj01857655/kiro-account-manager&type=Date)](https://star-history.com/#hj01857655/kiro-account-manager&Date)
 
 ---
 

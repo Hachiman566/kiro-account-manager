@@ -112,7 +112,8 @@ async fn login_idc(
     let auth_result = idc_provider.login().await?;
 
     let machine_id = get_machine_id();
-    let cw_client = CodeWhispererClient::new(&machine_id);
+    let region = &config.region;
+    let cw_client = CodeWhispererClient::with_region(&machine_id, region);
     let usage_call = cw_client.get_usage_limits(&auth_result.access_token).await;
     let (usage, is_banned) = match &usage_call {
         Ok(u) => (Some(u.clone()), false),

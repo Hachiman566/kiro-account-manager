@@ -113,20 +113,39 @@ pub async fn sync_account(state: State<'_, AppState>, id: String) -> Result<Acco
     // 获取 usage 数据
     let (usage_data, is_banned): (serde_json::Value, bool) = if provider_str == "BuilderId" {
         let machine_id = get_machine_id();
-        let cw_client = CodeWhispererClient::new(&machine_id);
+        let region = account.region.as_deref().unwrap_or("us-east-1");
+        let cw_client = CodeWhispererClient::with_region(&machine_id, region);
         let usage_call = cw_client.get_usage_limits(&new_access_token).await;
         let (usage, banned) = match &usage_call {
-            Ok(u) => (Some(u.clone()), false),
-            Err(e) if e.starts_with("BANNED:") => (None, true),
-            Err(_) => (None, false),
+            Ok(u) => {
+                println!("[sync_account] Successfully got usage data for BuilderId");
+                (Some(u.clone()), false)
+            },
+            Err(e) if e.starts_with("BANNED:") => {
+                println!("[sync_account] BuilderId account is banned: {}", e);
+                (None, true)
+            },
+            Err(e) => {
+                println!("[sync_account] Failed to get usage data for BuilderId: {}", e);
+                (None, false)
+            },
         };
         (serde_json::to_value(&usage).unwrap_or(serde_json::Value::Null), banned)
     } else {
         let usage_call = get_usage_limits_desktop(&new_access_token).await;
         let (usage, banned) = match &usage_call {
-            Ok(u) => (Some(u.clone()), false),
-            Err(e) if e.starts_with("BANNED:") => (None, true),
-            Err(_) => (None, false),
+            Ok(u) => {
+                println!("[sync_account] Successfully got usage data for {}", provider_str);
+                (Some(u.clone()), false)
+            },
+            Err(e) if e.starts_with("BANNED:") => {
+                println!("[sync_account] {} account is banned: {}", provider_str, e);
+                (None, true)
+            },
+            Err(e) => {
+                println!("[sync_account] Failed to get usage data for {}: {}", provider_str, e);
+                (None, false)
+            },
         };
         (serde_json::to_value(&usage).unwrap_or(serde_json::Value::Null), banned)
     };
@@ -264,7 +283,7 @@ pub async fn verify_account(
         
         // 使用 CodeWhisperer API 获取 usage
         let machine_id = get_machine_id();
-        let cw_client = CodeWhispererClient::new(&machine_id);
+        let cw_client = CodeWhispererClient::with_region(&machine_id, region_str);
         let usage = cw_client.get_usage_limits(&auth_result.access_token).await?;
         
         let (q, u) = usage.usage_breakdown_list.as_ref()
@@ -465,12 +484,21 @@ pub async fn add_account_by_idc(
     let auth_result = idc_provider.refresh_token(&refresh_token, metadata).await?;
     
     let machine_id = get_machine_id();
-    let cw_client = CodeWhispererClient::new(&machine_id);
+    let cw_client = CodeWhispererClient::with_region(&machine_id, &region);
     let usage_call = cw_client.get_usage_limits(&auth_result.access_token).await;
     let (usage, is_banned) = match &usage_call {
-        Ok(u) => (Some(u.clone()), false),
-        Err(e) if e.starts_with("BANNED:") => (None, true),
-        Err(_) => (None, false),
+        Ok(u) => {
+            println!("[add_account_by_idc] Successfully got usage data");
+            (Some(u.clone()), false)
+        },
+        Err(e) if e.starts_with("BANNED:") => {
+            println!("[add_account_by_idc] Account is banned: {}", e);
+            (None, true)
+        },
+        Err(e) => {
+            println!("[add_account_by_idc] Failed to get usage data: {}", e);
+            (None, false)
+        },
     };
     let usage_data = serde_json::to_value(&usage).unwrap_or(serde_json::Value::Null);
     

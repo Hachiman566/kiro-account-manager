@@ -302,8 +302,8 @@ pub async fn import_from_sso_token(
 
     // Step 8: 获取用量信息并添加账号
     let machine_id = get_machine_id();
-    let cw_client = CodeWhispererClient::new(&machine_id);
-    
+    let cw_client = CodeWhispererClient::with_region(&machine_id, &region);
+
     let usage = cw_client.get_usage_limits(&token_data.access_token).await.ok();
     let usage_data = serde_json::to_value(&usage).unwrap_or(serde_json::Value::Null);
     

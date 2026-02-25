@@ -6,8 +6,6 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use uuid::Uuid;
 
-const CODEWHISPERER_API: &str = "https://codewhisperer.us-east-1.amazonaws.com";
-
 /// CodeWhisperer 限额响应
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -93,10 +91,15 @@ pub struct BonusInfo {
 pub struct CodeWhispererClient {
     client: Client,
     machine_id: String,
+    region: String,
 }
 
 impl CodeWhispererClient {
     pub fn new(machine_id: &str) -> Self {
+        Self::with_region(machine_id, "us-east-1")
+    }
+
+    pub fn with_region(machine_id: &str, region: &str) -> Self {
         let client = Client::builder()
             .timeout(Duration::from_secs(30))
             .build()
@@ -105,6 +108,7 @@ impl CodeWhispererClient {
         Self {
             client,
             machine_id: machine_id.to_string(),
+            region: region.to_string(),
         }
     }
 
@@ -115,15 +119,17 @@ impl CodeWhispererClient {
 
     /// 获取限额信息 (用于 IdC/BuilderId token)
     pub async fn get_usage_limits(&self, access_token: &str) -> Result<CodeWhispererUsageResponse, String> {
+        // 使用正确的 endpoint: q.{region}.amazonaws.com (不是 codewhisperer)
         let url = format!(
-            "{}/getUsageLimits?isEmailRequired=true&origin=AI_EDITOR&resourceType=AGENTIC_REQUEST",
-            CODEWHISPERER_API
+            "https://q.{}.amazonaws.com/getUsageLimits?origin=AI_EDITOR&resourceType=AGENTIC_REQUEST",
+            self.region
         );
 
         let kiro_version = "0.6.18";
+        let host = format!("q.{}.amazonaws.com", self.region);
         let x_amz_user_agent = format!("aws-sdk-js/1.0.0 KiroIDE-{}-{}", kiro_version, self.machine_id);
         let user_agent = format!(
-            "aws-sdk-js/1.0.0 ua/2.1 os/windows lang/js md/nodejs#20.16.0 api/codewhispererruntime#1.0.0 m/E KiroIDE-{}-{}",
+            "aws-sdk-js/1.0.0 ua/2.1 os/darwin#24.6.0 lang/js md/nodejs#22.21.1 api/codewhispererruntime#1.0.0 m/N,E KiroIDE-{}-{}",
             kiro_version, self.machine_id
         );
 
@@ -134,7 +140,8 @@ impl CodeWhispererClient {
             .get(&url)
             .header("Authorization", format!("Bearer {}", access_token))
             .header("x-amz-user-agent", &x_amz_user_agent)
-            .header("user-agent", &user_agent)
+            .header("User-Agent", &user_agent)
+            .header("host", &host)
             .header("amz-sdk-invocation-id", Self::generate_invocation_id())
             .header("amz-sdk-request", "attempt=1; max=1")
             .header("Connection", "close")

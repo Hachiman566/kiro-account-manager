@@ -57,7 +57,7 @@ function AddAccountModal({ onClose, onSuccess }) {
           setAddLoading(false)
           return
         }
-        await invoke('add_account_by_idc', { refreshToken, clientId, clientSecret, region })
+        await invoke('add_account_by_idc', { refreshToken, clientId, clientSecret, region, clientIdHash: null })
       } else {
         await invoke('add_account_by_social', { refreshToken })
       }

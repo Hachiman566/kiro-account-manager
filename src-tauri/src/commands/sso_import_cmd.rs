@@ -8,7 +8,6 @@ use crate::account::Account;
 use crate::kiro::get_machine_id;
 use crate::codewhisperer_client::CodeWhispererClient;
 
-const PORTAL_BASE: &str = "https://portal.sso.us-east-1.amazonaws.com";
 const START_URL: &str = "https://view.awsapps.com/start";
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -75,7 +74,8 @@ pub async fn import_from_sso_token(
 ) -> Result<SsoImportResult, String> {
     let region = region.unwrap_or_else(|| "us-east-1".to_string());
     let oidc_base = format!("https://oidc.{}.amazonaws.com", region);
-    
+    let portal_base = format!("https://portal.sso.{}.amazonaws.com", region);
+
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(30))
         .build()
@@ -151,13 +151,13 @@ pub async fn import_from_sso_token(
     // Step 3: 验证 Bearer Token
     println!("[SSO Import] Step 3: 验证 Bearer Token...");
     let who_res = client
-        .get(format!("{}/token/whoAmI", PORTAL_BASE))
+        .get(format!("{}/token/whoAmI", portal_base))
         .header("Authorization", format!("Bearer {}", bearer_token))
         .header("Accept", "application/json")
         .send()
         .await
         .map_err(|e| format!("验证 Token 请求失败: {}", e))?;
-    
+
     if !who_res.status().is_success() {
         let status = who_res.status();
         let text = who_res.text().await.unwrap_or_default();
@@ -168,7 +168,7 @@ pub async fn import_from_sso_token(
     // Step 4: 获取设备会话令牌
     println!("[SSO Import] Step 4: 获取设备会话令牌...");
     let sess_res = client
-        .post(format!("{}/session/device", PORTAL_BASE))
+        .post(format!("{}/session/device", portal_base))
         .header("Authorization", format!("Bearer {}", bearer_token))
         .header("Content-Type", "application/json")
         .json(&serde_json::json!({}))

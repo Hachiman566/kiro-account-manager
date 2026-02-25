@@ -11,4 +11,3 @@ pub use base::{AuthResult, AuthProvider, RefreshMetadata};
 pub use social::SocialProvider;
 pub use idc::IdcProvider;
 pub use factory::*;
-// WebOAuthProvider 通过 web_oauth 模块访问

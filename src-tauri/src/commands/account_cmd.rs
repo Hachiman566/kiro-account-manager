@@ -9,6 +9,40 @@ use crate::providers::{AuthProvider, SocialProvider, IdcProvider, RefreshMetadat
 use crate::kiro::get_machine_id;
 use serde::{Deserialize, Serialize};
 
+/// 从 clientSecret JWT 中提取 startUrl 并计算 clientIdHash
+fn extract_client_id_hash_from_jwt(client_secret: &str) -> Option<String> {
+    use sha2::{Digest, Sha256};
+    use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
+
+    // JWT 格式: header.payload.signature
+    let parts: Vec<&str> = client_secret.split('.').collect();
+    if parts.len() < 2 {
+        return None;
+    }
+
+    // Base64 URL 解码 payload
+    let payload = parts[1];
+    let decoded = URL_SAFE_NO_PAD.decode(payload).ok()?;
+    let decoded_str = String::from_utf8(decoded).ok()?;
+    let payload_json: serde_json::Value = serde_json::from_str(&decoded_str).ok()?;
+
+    // 提取 startUrl
+    let serialized = payload_json.get("serialized")?;
+    let serialized_obj: serde_json::Value = if serialized.is_string() {
+        serde_json::from_str(serialized.as_str()?).ok()?
+    } else {
+        serialized.clone()
+    };
+
+    let start_url = serialized_obj.get("initiateLoginUri")?.as_str()?;
+
+    // 计算 hash
+    let mut hasher = Sha256::new();
+    hasher.update(start_url.as_bytes());
+    Some(hex::encode(hasher.finalize()))
+}
+
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VerifyAccountResponse {
     #[serde(rename = "usageLimit")]
@@ -388,16 +422,17 @@ pub async fn add_local_kiro_account(state: State<'_, AppState>) -> Result<Accoun
         let hash = local_token.client_id_hash.clone()
             .ok_or("IdC 账号缺少 clientIdHash")?;
         let region = local_token.region.clone().unwrap_or_else(|| "us-east-1".to_string());
-        
+
         let client_reg = get_client_registration(&hash)
             .ok_or(format!("未找到客户端注册信息: {}.json", hash))?;
-        
+
         add_account_by_idc(
             state,
             refresh_token,
             client_reg.client_id,
             client_reg.client_secret,
             Some(region),
+            Some(hash),
         ).await
     } else {
         add_account_by_social(
@@ -416,6 +451,7 @@ pub async fn add_account_by_idc(
     client_id: String,
     client_secret: String,
     region: Option<String>,
+    client_id_hash: Option<String>,
 ) -> Result<Account, String> {
     let region = region.unwrap_or_else(|| "us-east-1".to_string());
     let metadata = RefreshMetadata {
@@ -445,13 +481,18 @@ pub async fn add_account_by_idc(
     let user_id = usage.as_ref()
         .and_then(|u| u.user_info.as_ref())
         .and_then(|u| u.user_id.clone());
-    
-    use sha2::{Digest, Sha256};
-    let start_url = "https://view.awsapps.com/start";
-    let mut hasher = Sha256::new();
-    hasher.update(start_url.as_bytes());
-    let client_id_hash = hex::encode(hasher.finalize());
-    
+
+    // 使用传入的 client_id_hash，如果没有则从 clientSecret JWT 中提取
+    let final_client_id_hash = client_id_hash.unwrap_or_else(|| {
+        extract_client_id_hash_from_jwt(&client_secret).unwrap_or_else(|| {
+            // 降级方案：使用默认 startUrl 计算
+            use sha2::{Digest, Sha256};
+            let mut hasher = Sha256::new();
+            hasher.update(b"https://view.awsapps.com/start");
+            hex::encode(hasher.finalize())
+        })
+    });
+
     let expires_at = chrono::Local::now() + chrono::Duration::seconds(auth_result.expires_in);
     
     let mut store = state.store.lock().unwrap();
@@ -465,7 +506,7 @@ pub async fn add_account_by_idc(
         existing.client_id = Some(client_id);
         existing.client_secret = Some(client_secret);
         existing.region = Some(region);
-        existing.client_id_hash = Some(client_id_hash);
+        existing.client_id_hash = Some(final_client_id_hash.clone());
         existing.id_token = auth_result.id_token;
         existing.sso_session_id = auth_result.sso_session_id;
         existing.usage_data = Some(usage_data);
@@ -481,7 +522,7 @@ pub async fn add_account_by_idc(
         account.client_id = Some(client_id);
         account.client_secret = Some(client_secret);
         account.region = Some(region);
-        account.client_id_hash = Some(client_id_hash);
+        account.client_id_hash = Some(final_client_id_hash);
         account.id_token = auth_result.id_token;
         account.sso_session_id = auth_result.sso_session_id;
         account.usage_data = Some(usage_data);

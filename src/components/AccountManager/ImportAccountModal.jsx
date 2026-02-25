@@ -160,7 +160,8 @@ function ImportAccountModal({ onClose, onSuccess }) {
             refreshToken: item.refreshToken,
             clientId: item.clientId,
             clientSecret: item.clientSecret,
-            region: item.region || null
+            region: item.region || null,
+            clientIdHash: null
           })
         }
         success.push({ index: item._index + 1, email: account.email })
